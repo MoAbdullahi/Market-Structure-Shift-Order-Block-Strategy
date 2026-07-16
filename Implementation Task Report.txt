@@ -1,0 +1,685 @@
+# CRT + Market Structure Shift + Order Block Strategy
+
+## Implementation Task Report
+
+### Objective
+
+Develop a modular Python backtesting engine implementing the Candle Range Theory (CRT) liquidity reversal strategy using a two-timeframe hierarchy.
+
+The implementation must faithfully reproduce the trading logic while eliminating look-ahead bias, supporting realistic execution modeling, and providing a framework suitable for parameter optimization and future strategy extensions.
+
+---
+
+# Strategy Overview
+
+The strategy combines higher-timeframe liquidity sweeps with lower-timeframe confirmation before entering a retracement into an Order Block.
+
+Timeframes
+
+• Higher Timeframe (HTF): 1 Hour
+
+• Lower Timeframe (LTF): 5 Minutes
+
+Trading workflow
+
+1. Detect HTF CRT trigger.
+
+2. Confirm reversal through LTF Market Structure Shift (MSS).
+
+3. Identify the Order Block responsible for the move.
+
+4. Wait for retracement into the Order Block.
+
+5. Execute limit entry.
+
+6. Manage trade using staged exits and dynamic stop movement.
+
+---
+
+# Functional Requirements
+
+## 1. Higher Timeframe CRT Detection
+
+Every completed H1 candle is evaluated against the previous completed H1 candle.
+
+Bearish CRT
+
+Conditions
+
+• Current High > Previous High
+
+• Current Close < Previous High
+
+• Previous candle range ≥ 0.5 × ATR(14)
+
+Bullish CRT
+
+Conditions
+
+• Current Low < Previous Low
+
+• Current Close > Previous Low
+
+• Previous candle range ≥ 0.5 × ATR(14)
+
+Output
+
+Each valid trigger produces a CRT signal containing
+
+• direction
+
+• trigger timestamp
+
+• trigger high
+
+• trigger low
+
+• previous high
+
+• previous low
+
+---
+
+## 2. Lower Timeframe MSS Confirmation
+
+After a completed HTF trigger is detected, monitor the M5 chart.
+
+The strategy searches for a Market Structure Shift.
+
+Bearish setup
+
+• Determine reference low from the first configurable number of M5 candles.
+
+• Confirm when a candle closes below that reference.
+
+Bullish setup
+
+• Determine reference high.
+
+• Confirm when a candle closes above it.
+
+The MSS confirms that the HTF liquidity sweep has resulted in a genuine directional shift.
+
+No trade is permitted before MSS confirmation.
+
+---
+
+## 3. Order Block Detection
+
+After MSS confirmation
+
+Locate the final opposite-colored candle immediately preceding the impulsive break.
+
+Bearish
+
+Last bullish candle.
+
+Bullish
+
+Last bearish candle.
+
+The candle body defines the Order Block.
+
+The entry price is configurable.
+
+Supported pricing modes
+
+• Candle midpoint
+
+• Open
+
+• Close
+
+• Body high
+
+• Body low
+
+---
+
+## 4. Pending Entry
+
+After identifying the Order Block
+
+Place a pending limit order.
+
+The position opens only if price revisits the Order Block.
+
+No market entries are allowed.
+
+---
+
+## 5. Risk Management
+
+Stop Loss
+
+Bearish
+
+Trigger High
+
+*
+
+ATR Buffer
+
+Bullish
+
+Trigger Low
+
+−
+
+ATR Buffer
+
+Target
+
+Opposite side of the swept HTF range.
+
+Risk
+
+R = Entry − Stop
+
+---
+
+## 6. Partial Exit Logic
+
+Exit Scheme A
+
+50%
+
+at
+
+1R
+
+30%
+
+at
+
+2R
+
+20%
+
+at
+
+HTF target
+
+Stop management
+
+After first partial
+
+Move stop to breakeven.
+
+After second partial
+
+Move stop to 1R.
+
+---
+
+# Required Improvements
+
+## 1. Time Synchronization
+
+Problem
+
+Many implementations immediately begin scanning M5 candles while the H1 candle is still forming.
+
+This introduces look-ahead bias because the final H1 close is unknown until the candle completes.
+
+Required implementation
+
+The engine shall
+
+Wait until the H1 candle closes.
+
+Only then generate the CRT signal.
+
+Begin scanning M5 candles starting with the first completed M5 candle after the H1 close.
+
+Benefits
+
+Eliminates look-ahead bias.
+
+Produces realistic chronological execution.
+
+Matches live trading conditions.
+
+---
+
+## 2. Pending Order Expiration
+
+Problem
+
+Without expiration, a pending Order Block entry remains active indefinitely.
+
+This creates unrealistic fills several hours or days after the market context has changed.
+
+Required implementation
+
+Each pending order shall have a configurable lifetime measured in M5 candles.
+
+Example
+
+PendingLifetime = 24
+
+If the Order Block is not revisited within 24 completed M5 candles
+
+Cancel the order.
+
+Return to Idle.
+
+Benefits
+
+More realistic execution.
+
+Reduces stale entries.
+
+Allows optimization of entry timing.
+
+---
+
+## 3. Deterministic Strategy State Machine
+
+Problem
+
+Nested loops become difficult to maintain and often create hidden logical errors.
+
+Required implementation
+
+Replace nested procedural logic with a finite state machine.
+
+States
+
+Idle
+
+No active setup.
+
+↓
+
+Awaiting MSS
+
+CRT trigger detected.
+
+Waiting for lower timeframe confirmation.
+
+↓
+
+Awaiting Retracement
+
+MSS confirmed.
+
+Pending Order Block limit order.
+
+↓
+
+Active Trade
+
+Entry executed.
+
+Trade management active.
+
+↓
+
+Closed
+
+Trade completed.
+
+Statistics recorded.
+
+Return to Idle.
+
+State transitions
+
+Idle
+
+↓
+
+CRT Trigger
+
+↓
+
+Awaiting MSS
+
+↓
+
+MSS Confirmed
+
+↓
+
+Awaiting Retracement
+
+↓
+
+Entry Filled
+
+↓
+
+Active Trade
+
+↓
+
+Target
+
+or
+
+Stop
+
+↓
+
+Closed
+
+Benefits
+
+Predictable execution.
+
+Easy debugging.
+
+Supports multiple setup types.
+
+Supports concurrent strategy extensions.
+
+Supports future event-driven architecture.
+
+---
+
+## 4. Realistic Execution Costs
+
+Problem
+
+Ignoring transaction costs leads to inflated performance.
+
+Required implementation
+
+Spread
+
+Apply configurable bid-ask spread.
+
+Commission
+
+Deduct per-trade commission.
+
+Slippage
+
+Model configurable execution slippage.
+
+Execution price
+
+Entry
+
+Entry Price
+
+*
+
+Spread
+
+*
+
+Slippage
+
+Exit
+
+Exit Price
+
+−
+
+Spread
+
+−
+
+Slippage
+
+Benefits
+
+Produces realistic backtests.
+
+Improves robustness.
+
+Allows broker-specific calibration.
+
+---
+
+## 5. Performance Analytics
+
+The engine shall compute
+
+Trade Metrics
+
+Total trades
+
+Winning trades
+
+Losing trades
+
+Win rate
+
+Average win
+
+Average loss
+
+Average R
+
+Largest win
+
+Largest loss
+
+Expectancy
+
+Profit factor
+
+Average holding time
+
+Maximum holding time
+
+Average bars in trade
+
+Equity Metrics
+
+Net profit
+
+Gross profit
+
+Gross loss
+
+Maximum drawdown
+
+Drawdown duration
+
+Return over drawdown
+
+Sharpe ratio
+
+Sortino ratio
+
+Recovery factor
+
+Equity curve
+
+Monthly returns
+
+Yearly returns
+
+Risk Metrics
+
+Maximum consecutive losses
+
+Maximum consecutive wins
+
+Average risk
+
+Average reward
+
+Average RR
+
+Average stop distance
+
+Average target distance
+
+Execution Metrics
+
+Average slippagex
+
+Average spread cost
+
+Commission paid
+
+Canceled pending orders
+
+Expired setups
+
+Missed entries
+
+Invalidated MSS
+
+---
+
+## 6. Full Strategy Parameterization
+
+Every configurable value shall be externally defined.
+
+Indicator Parameters
+
+ATR Period
+
+ATR Minimum Ratio
+
+ATR Stop Buffer
+
+Entry Parameters
+
+Order Block Pricing
+
+Pending Order Lifetime
+
+MSS Lookback
+
+Reference Candle Count
+
+Risk Parameters
+
+Partial Exit Percentages
+
+First RR Target
+
+Second RR Target
+
+Final Target Logic
+
+Break-even Rules
+
+Trailing Stop Rules
+
+Execution Parameters
+
+Spread
+
+Commission
+
+Slippage
+
+Minimum Tick Size
+
+Position Size
+
+Session Parameters
+
+Trading Sessions
+
+Session Filters
+
+News Filters
+
+Strong Filter
+
+Premium/Discount Filter
+
+Optimization Parameters
+
+All parameters shall be exposed for
+
+Grid Search
+
+Random Search
+
+Bayesian Optimization
+
+Walk-Forward Optimization
+
+Monte Carlo Analysis
+
+---
+
+# Software Architecture
+
+Recommended modules
+
+indicators.py
+
+ATR calculations.
+
+crt.py
+
+Higher timeframe CRT detection.
+
+mss.py
+
+Market Structure Shift confirmation.
+
+orderblock.py
+
+Order Block identification.
+
+entries.py
+
+Pending order management.
+
+risk.py
+
+Stop and target calculations.
+
+execution.py
+
+Execution cost modeling.
+
+states.py
+
+Finite state machine.
+
+trade.py
+
+Trade management.
+
+analytics.py
+
+Performance statistics.
+
+backtester.py
+
+Simulation engine.
+
+strategy.py
+
+Strategy orchestration.
+
+main.py
+
+Configuration and execution.
+
+---
+
+# Deliverables
+
+The completed implementation shall provide
+
+A modular strategy implementation.
+
+Bias-free multi-timeframe synchronization.
+
+Deterministic event-driven execution.
+
+Realistic order simulation.
+
+Comprehensive trade analytics.
+
+Configurable optimization framework.
+
+Clean separation between signal generation, execution, and trade management.
+
+The resulting framework should support future enhancements, including Fair Value Gap entries, Premium/Discount filters, session filters, multi-symbol testing, walk-forward optimization, portfolio-level simulations, and live execution with minimal changes to the core architecture.
+
+

@@ -1,0 +1,87 @@
+{
+  "run": "20260716_201912",
+  "start": null,
+  "end": null,
+  "params": {
+    "atr_period_htf": 14,
+    "atr_period_ltf": 14,
+    "min_atr_ratio": 0.5,
+    "stop_buffer_atr": 0.1,
+    "ob_pricing": "midpoint",
+    "pending_lifetime": 24,
+    "mss_lookback": 36,
+    "reference_candle_count": 3,
+    "partial_fractions": [
+      0.5,
+      0.3,
+      0.2
+    ],
+    "first_rr": 1.0,
+    "second_rr": 2.0,
+    "intrabar_priority": "stop_first",
+    "move_stop_to_breakeven_after": 1,
+    "trail_stop_to_1r_after": 2,
+    "risk_pct": 1.0,
+    "session_enabled": false,
+    "session_windows": [],
+    "news_blackouts": [],
+    "strong_filter": false,
+    "pd_filter": false
+  },
+  "symbols": {
+    "EURUSD": {
+      "trades": 1778,
+      "win_rate": 0.4972,
+      "expectancy_r": -0.4689,
+      "profit_factor": 0.5224108771833054,
+      "net_profit": -99982.96,
+      "max_drawdown": 103701.95,
+      "sharpe": -4.6
+    },
+    "GBPUSD": {
+      "trades": 1790,
+      "win_rate": 0.5045,
+      "expectancy_r": -0.4575,
+      "profit_factor": 0.5030559628429534,
+      "net_profit": -99981.9,
+      "max_drawdown": 100732.09,
+      "sharpe": -4.207
+    },
+    "USDJPY": {
+      "trades": 1782,
+      "win_rate": 0.56,
+      "expectancy_r": -0.2964,
+      "profit_factor": 0.5449343798487241,
+      "net_profit": -99632.27,
+      "max_drawdown": 99658.82,
+      "sharpe": -3.064
+    },
+    "XAUUSD": {
+      "trades": 1765,
+      "win_rate": 0.5915,
+      "expectancy_r": -0.1771,
+      "profit_factor": 0.6879055804134738,
+      "net_profit": -96559.66,
+      "max_drawdown": 121856.69,
+      "sharpe": -2.055
+    },
+    "NAS100": {
+      "trades": 1469,
+      "win_rate": 0.6059,
+      "expectancy_r": -0.0076,
+      "profit_factor": 0.9488355488517085,
+      "net_profit": -23172.32,
+      "max_drawdown": 72064.27,
+      "sharpe": -0.095
+    },
+    "US30": {
+      "trades": 1419,
+      "win_rate": 0.5849,
+      "expectancy_r": -0.0879,
+      "profit_factor": 0.8122019911899827,
+      "net_profit": -75501.07,
+      "max_drawdown": 90373.27,
+      "sharpe": -1.017
+    }
+  }
+}

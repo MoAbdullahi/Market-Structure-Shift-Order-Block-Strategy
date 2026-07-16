@@ -1,0 +1,70 @@
+# ---------------------------------------------------------------------------
+# CRT + Market Structure Shift + Order Block strategy configuration
+# Every configurable value of the engine is defined here (Full Strategy
+# Parameterization — Implementation Task Report §6).
+#
+# Defaults reproduce the #1 setup: OB entries only, Confirm(MSS) required,
+# All Sessions, Strong Filter OFF, P/D Filter OFF.
+# ---------------------------------------------------------------------------
+
+data:
+  dir: Data
+  instruments: [EURUSD, GBPUSD, USDJPY, XAUUSD, NAS100, US30]
+  start: null          # e.g. "2022-05-12" (null = full range)
+  end: null            # e.g. "2026-05-12"
+
+indicator:
+  atr_period_htf: 14         # ATR period on H1 (CRT range filter)
+  atr_period_ltf: 14         # ATR period on M5 (stop buffer)
+  min_atr_ratio: 0.5         # prev H1 range >= ratio * ATR(HTF)
+  stop_buffer_atr: 0.1       # stop = swept extreme +/- buffer * ATR(LTF)
+
+entry:
+  ob_pricing: midpoint       # midpoint | open | close | body_high | body_low
+  pending_lifetime: 24       # M5 candles before a pending order is canceled
+  mss_lookback: 36           # max M5 candles to confirm MSS before invalidation
+  reference_candle_count: 3  # M5 candles that build the MSS reference level
+
+risk:
+  partial_fractions: [0.5, 0.3, 0.2]   # Exit Scheme A: 1R / 2R / HTF target
+  first_rr: 1.0                        # first partial at 1R
+  second_rr: 2.0                       # second partial at 2R
+  move_stop_to_breakeven_after: 1      # after Nth partial -> stop to breakeven
+  trail_stop_to_1r_after: 2            # after Nth partial -> stop to 1R level
+  intrabar_priority: stop_first        # stop_first (conservative) | target_first
+  risk_pct: 1.0                        # % of current equity risked per trade
+
+execution:
+  initial_equity: 100000
+  # per-instrument cost models (price units; commission = account currency
+  # per unit of position size, per side)
+  instruments:
+    EURUSD: {spread: 0.00012, slippage: 0.00002, commission_per_unit_side: 0.000035, tick_size: 0.00001}
+    GBPUSD: {spread: 0.00015, slippage: 0.00002, commission_per_unit_side: 0.000035, tick_size: 0.00001}
+    USDJPY: {spread: 0.012,   slippage: 0.002,   commission_per_unit_side: 0.005,    tick_size: 0.001}
+    XAUUSD: {spread: 0.25,    slippage: 0.05,    commission_per_unit_side: 0.0,      tick_size: 0.01}
+    NAS100: {spread: 1.5,     slippage: 0.25,    commission_per_unit_side: 0.0,      tick_size: 0.1}
+    US30:   {spread: 2.5,     slippage: 0.5,     commission_per_unit_side: 0.0,      tick_size: 0.1}
+
+session:
+  enabled: false             # false = All Sessions (setup #1)
+  windows: []                # e.g. [["07:00", "16:00"]] (UTC)
+  news_blackouts: []         # e.g. [["2023-01-05T13:25", "2023-01-05T13:40"]]
+  strong_filter: false       # stricter midpoint-close CRT requirement (OFF)
+  pd_filter: false           # premium/discount alignment requirement (OFF)
+
+optimization:
+  objective: expectancy_r      # column used to rank / select parameter sets
+  n_random: 50                 # samples for --mode random
+  space:                       # any dotted config key can be searched
+    entry.pending_lifetime: [12, 24, 48]
+    entry.reference_candle_count: [2, 3, 5]
+    indicator.stop_buffer_atr: [0.05, 0.1, 0.2]
+  walkforward:
+    train_months: 12
+    test_months: 3
+  montecarlo:
+    n_paths: 10000
+
+output:
+  dir: reports

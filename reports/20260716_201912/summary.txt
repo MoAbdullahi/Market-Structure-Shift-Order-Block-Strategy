@@ -1,0 +1,10 @@
+CRT + Market Structure Shift + Order Block — backtest summary
+run: 20260716_201912  window: data start -> data end
+
+symbol    trades    win%     expR      PF          net        maxDD  sharpe
+EURUSD      1778  49.72%   -0.469    0.52    -99982.96    103701.95  -4.600
+GBPUSD      1790  50.45%   -0.458    0.50    -99981.90    100732.09  -4.207
+USDJPY      1782  56.00%   -0.296    0.54    -99632.27     99658.82  -3.064
+XAUUSD      1765  59.15%   -0.177    0.69    -96559.66    121856.69  -2.055
+NAS100      1469  60.59%   -0.008    0.95    -23172.32     72064.27  -0.095
+US30        1419  58.49%   -0.088    0.81    -75501.07     90373.27  -1.017
