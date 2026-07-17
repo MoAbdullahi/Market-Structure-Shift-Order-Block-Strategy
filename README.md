@@ -198,6 +198,33 @@ k ∈ {0,2,4,6,8}; results in `reports/opt_walkforward_20260717_001931/`):
   would be post-hoc instrument selection — it is a hypothesis for new data,
   not a conclusion.
 
+### Follow-up 2: M15 entries, walk-forward validated
+
+The investigation's second lever — running the identical logic on **M15**
+LTF bars (`Data/M15/`, `--timeframe M15`) — was tested with the same
+walk-forward protocol (12 windows × 6 symbols, small-R filter selected per
+train window; results in `reports/opt_walkforward_M15_20260717_010413/`):
+
+| Symbol | OOS expectancy (M15) | Positive windows | (M5 comparison) |
+|---|---:|---:|---:|
+| US30 | **+0.208 R** | 11/12 | +0.018 |
+| XAUUSD | +0.165 R | 9/12 | −0.009 |
+| NAS100 | +0.153 R | 9/12 | +0.070 |
+| USDJPY | +0.101 R | 10/12 | −0.047 |
+| GBPUSD | +0.022 R | 9/12 | −0.062 |
+| EURUSD | −0.047 R | 5/12 | −0.045 |
+
+Pooled out-of-sample: **+0.132 R over 2,260 test trades, 53/72 windows
+positive** (vs +0.010 R on M5) — positive on 5 of 6 instruments, consistent
+across windows, and an order of magnitude above the M5 result. This supports
+the diagnosis: the signal's edge is real but cannot pay for M5-scale
+execution; at M15 granularity it clears costs on everything except EURUSD.
+
+**Caveat:** the M15 hypothesis was formed after full-sample diagnostics that
+overlap these test windows, so this is strong but not pristine evidence —
+the definitive confirmation is performance on genuinely new data
+(post-2026-05, or instruments outside this basket).
+
 ---
 
 ## Usage

@@ -1,0 +1,89 @@
+{
+  "run": "20260717_010220",
+  "start": null,
+  "end": null,
+  "timeframe": "M15",
+  "params": {
+    "atr_period_htf": 14,
+    "atr_period_ltf": 14,
+    "min_atr_ratio": 0.5,
+    "stop_buffer_atr": 0.1,
+    "ob_pricing": "midpoint",
+    "pending_lifetime": 24,
+    "mss_lookback": 36,
+    "reference_candle_count": 3,
+    "partial_fractions": [
+      0.5,
+      0.3,
+      0.2
+    ],
+    "first_rr": 1.0,
+    "second_rr": 2.0,
+    "intrabar_priority": "stop_first",
+    "move_stop_to_breakeven_after": 1,
+    "trail_stop_to_1r_after": 2,
+    "risk_pct": 1.0,
+    "min_r_cost_multiple": 0.0,
+    "session_enabled": false,
+    "session_windows": [],
+    "news_blackouts": [],
+    "strong_filter": false,
+    "pd_filter": false
+  },
+  "symbols": {
+    "EURUSD": {
+      "trades": 949,
+      "win_rate": 0.5332,
+      "expectancy_r": -0.4909,
+      "profit_factor": 0.5197656353373393,
+      "net_profit": -99355.61,
+      "max_drawdown": 102457.98,
+      "sharpe": -2.433
+    },
+    "GBPUSD": {
+      "trades": 958,
+      "win_rate": 0.572,
+      "expectancy_r": -0.2723,
+      "profit_factor": 0.676248216016147,
+      "net_profit": -94166.91,
+      "max_drawdown": 96825.39,
+      "sharpe": -1.837
+    },
+    "USDJPY": {
+      "trades": 967,
+      "win_rate": 0.6101,
+      "expectancy_r": -0.1873,
+      "profit_factor": 0.6904495092783022,
+      "net_profit": -85856.22,
+      "max_drawdown": 87518.16,
+      "sharpe": -1.547
+    },
+    "XAUUSD": {
+      "trades": 880,
+      "win_rate": 0.6239,
+      "expectancy_r": 0.0203,
+      "profit_factor": 0.9913143944104592,
+      "net_profit": -4155.89,
+      "max_drawdown": 55237.71,
+      "sharpe": 0.128
+    },
+    "NAS100": {
+      "trades": 802,
+      "win_rate": 0.6072,
+      "expectancy_r": 0.0132,
+      "profit_factor": 0.9930876105176991,
+      "net_profit": -3159.9,
+      "max_drawdown": 48178.65,
+      "sharpe": 0.094
+    },
+    "US30": {
+      "trades": 761,
+      "win_rate": 0.6216,
+      "expectancy_r": 0.1931,
+      "profit_factor": 1.3319157572806963,
+      "net_profit": 275823.68,
+      "max_drawdown": 86270.45,
+      "sharpe": 1.165
+    }
+  }
+}

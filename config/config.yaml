@@ -9,6 +9,7 @@
 
 data:
   dir: Data
+  timeframe: M5              # LTF bar data: M5 or M15 (Data/<TF>/ subfolder also searched)
   instruments: [EURUSD, GBPUSD, USDJPY, XAUUSD, NAS100, US30]
   start: null          # e.g. "2022-05-12" (null = full range)
   end: null            # e.g. "2026-05-12"

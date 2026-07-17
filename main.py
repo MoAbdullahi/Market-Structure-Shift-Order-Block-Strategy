@@ -64,8 +64,18 @@ def build_params(cfg: dict) -> StrategyParams:
     )
 
 
-def load_m5(data_dir: Path, symbol: str, start=None, end=None) -> pd.DataFrame:
-    df = pd.read_parquet(data_dir / f"{symbol}_M5.parquet")
+def load_data(
+    data_dir: Path, symbol: str, start=None, end=None, timeframe: str = "M5"
+) -> pd.DataFrame:
+    """Load LTF bars. Files live at Data/<SYM>_<TF>.parquet or Data/<TF>/<SYM>_<TF>.parquet."""
+    candidates = [
+        data_dir / f"{symbol}_{timeframe}.parquet",
+        data_dir / timeframe / f"{symbol}_{timeframe}.parquet",
+    ]
+    path = next((p for p in candidates if p.exists()), None)
+    if path is None:
+        raise FileNotFoundError(f"no {timeframe} data for {symbol} under {data_dir}")
+    df = pd.read_parquet(path)
     df = df.sort_index()
     if start:
         df = df.loc[pd.Timestamp(start, tz="UTC") :]
@@ -110,6 +120,9 @@ def run(argv=None) -> int:
     parser.add_argument("--start", default=None)
     parser.add_argument("--end", default=None)
     parser.add_argument("--output", default=None)
+    parser.add_argument(
+        "--timeframe", default=None, help="LTF data timeframe, e.g. M5 or M15"
+    )
     args = parser.parse_args(argv)
 
     cfg = load_config(Path(args.config))
@@ -118,6 +131,7 @@ def run(argv=None) -> int:
     symbols = args.symbols or cfg["data"]["instruments"]
     start = args.start or cfg["data"].get("start")
     end = args.end or cfg["data"].get("end")
+    timeframe = args.timeframe or cfg["data"].get("timeframe", "M5")
     initial_equity = cfg["execution"]["initial_equity"]
 
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
@@ -130,6 +144,7 @@ def run(argv=None) -> int:
         "run": stamp,
         "start": start,
         "end": end,
+        "timeframe": timeframe,
         "params": vars(params) | {},
         "symbols": {},
     }
@@ -142,9 +157,9 @@ def run(argv=None) -> int:
             commission_per_unit_side=cost_cfg["commission_per_unit_side"],
             tick_size=cost_cfg["tick_size"],
         )
-        m5 = load_m5(data_dir, symbol, start, end)
+        m5 = load_data(data_dir, symbol, start, end, timeframe)
         print(
-            f"[{symbol}] {len(m5)} M5 bars {m5.index[0]} -> {m5.index[-1]} ... ",
+            f"[{symbol}] {len(m5)} {timeframe} bars {m5.index[0]} -> {m5.index[-1]} ... ",
             end="",
             flush=True,
         )

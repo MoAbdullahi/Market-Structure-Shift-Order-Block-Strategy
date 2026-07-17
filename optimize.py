@@ -35,7 +35,7 @@ import pandas as pd
 from engine.analytics import compute_metrics
 from engine.backtester import Backtester
 from engine.execution import CostModel
-from main import PROJECT_DIR, build_params, load_config, load_m5
+from main import PROJECT_DIR, build_params, load_config, load_data
 
 
 # --------------------------------------------------------------------- #
@@ -93,11 +93,11 @@ def combos_from_space(space: dict, mode: str, n_random: int, seed: int = 1):
 
 
 # --------------------------------------------------------------------- #
-def run_search(cfg, symbols, data_dir, start, end, mode, out_dir):
+def run_search(cfg, symbols, data_dir, start, end, mode, out_dir, timeframe="M5"):
     opt = cfg["optimization"]
     rows = []
     for symbol in symbols:
-        m5 = load_m5(data_dir, symbol, start, end)
+        m5 = load_data(data_dir, symbol, start, end, timeframe)
         for overrides in combos_from_space(opt["space"], mode, opt.get("n_random", 50)):
             res = evaluate(symbol, apply_overrides(cfg, overrides), m5)
             res.pop("_result")
@@ -114,13 +114,13 @@ def run_search(cfg, symbols, data_dir, start, end, mode, out_dir):
     return df
 
 
-def run_walkforward(cfg, symbols, data_dir, start, end, out_dir):
+def run_walkforward(cfg, symbols, data_dir, start, end, out_dir, timeframe="M5"):
     opt = cfg["optimization"]
     wf = opt["walkforward"]
     objective = opt.get("objective", "expectancy_r")
     rows = []
     for symbol in symbols:
-        m5 = load_m5(data_dir, symbol, start, end)
+        m5 = load_data(data_dir, symbol, start, end, timeframe)
         t0, t1 = m5.index[0], m5.index[-1]
         train_len = pd.DateOffset(months=wf["train_months"])
         test_len = pd.DateOffset(months=wf["test_months"])
@@ -164,13 +164,13 @@ def run_walkforward(cfg, symbols, data_dir, start, end, out_dir):
     return df
 
 
-def run_montecarlo(cfg, symbols, data_dir, start, end, out_dir):
+def run_montecarlo(cfg, symbols, data_dir, start, end, out_dir, timeframe="M5"):
     mc = cfg["optimization"].get("montecarlo", {})
     n_paths = mc.get("n_paths", 10000)
     rng = np.random.default_rng(7)
     rows = []
     for symbol in symbols:
-        m5 = load_m5(data_dir, symbol, start, end)
+        m5 = load_data(data_dir, symbol, start, end, timeframe)
         res = evaluate(symbol, cfg, m5)
         trades = res.pop("_result").trades
         rs = np.array([t.realized_r for t in trades])
@@ -216,6 +216,9 @@ def run(argv=None) -> int:
     parser.add_argument("--symbols", nargs="*", default=None)
     parser.add_argument("--start", default=None)
     parser.add_argument("--end", default=None)
+    parser.add_argument(
+        "--timeframe", default=None, help="LTF data timeframe, e.g. M5 or M15"
+    )
     args = parser.parse_args(argv)
 
     cfg = load_config(Path(args.config))
@@ -223,17 +226,20 @@ def run(argv=None) -> int:
     symbols = args.symbols or cfg["data"]["instruments"]
     start = args.start or cfg["data"].get("start")
     end = args.end or cfg["data"].get("end")
+    timeframe = args.timeframe or cfg["data"].get("timeframe", "M5")
 
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    out_dir = PROJECT_DIR / cfg["output"]["dir"] / f"opt_{args.mode}_{stamp}"
+    out_dir = (
+        PROJECT_DIR / cfg["output"]["dir"] / f"opt_{args.mode}_{timeframe}_{stamp}"
+    )
     out_dir.mkdir(parents=True, exist_ok=True)
 
     if args.mode in ("grid", "random"):
-        run_search(cfg, symbols, data_dir, start, end, args.mode, out_dir)
+        run_search(cfg, symbols, data_dir, start, end, args.mode, out_dir, timeframe)
     elif args.mode == "walkforward":
-        run_walkforward(cfg, symbols, data_dir, start, end, out_dir)
+        run_walkforward(cfg, symbols, data_dir, start, end, out_dir, timeframe)
     else:
-        run_montecarlo(cfg, symbols, data_dir, start, end, out_dir)
+        run_montecarlo(cfg, symbols, data_dir, start, end, out_dir, timeframe)
     return 0
 
 
