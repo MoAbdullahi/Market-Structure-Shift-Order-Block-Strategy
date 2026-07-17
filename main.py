@@ -55,6 +55,7 @@ def build_params(cfg: dict) -> StrategyParams:
         move_stop_to_breakeven_after=rsk["move_stop_to_breakeven_after"],
         trail_stop_to_1r_after=rsk["trail_stop_to_1r_after"],
         risk_pct=rsk["risk_pct"],
+        min_r_cost_multiple=rsk.get("min_r_cost_multiple", 0.0),
         session_enabled=ses["enabled"],
         session_windows=tuple(tuple(w) for w in ses["windows"]),
         news_blackouts=tuple(tuple(w) for w in ses["news_blackouts"]),

@@ -49,6 +49,7 @@ class Backtester:
         params: StrategyParams,
         cost_model: CostModel,
         initial_equity: float = 100_000.0,
+        htf_rule: str = "1h",  # HTF aggregation rule (default H1 per spec)
     ):
         if not m5.index.is_monotonic_increasing:
             m5 = m5.sort_index()
@@ -57,6 +58,7 @@ class Backtester:
         self.params = params
         self.cost_model = cost_model
         self.initial_equity = initial_equity
+        self.htf_rule = htf_rule
 
     def run(self) -> BacktestResult:
         m5 = self.m5
@@ -64,9 +66,9 @@ class Backtester:
 
         atr_ltf = indicators.atr(m5, p.atr_period_ltf).to_numpy()
 
-        # Completed-H1 aggregation (hours with no M5 data simply don't exist).
+        # Completed-HTF aggregation (buckets with no LTF data simply don't exist).
         h1 = (
-            m5.resample("1h")
+            m5.resample(self.htf_rule)
             .agg({"open": "first", "high": "max", "low": "min", "close": "last"})
             .dropna()
         )
@@ -75,9 +77,9 @@ class Backtester:
 
         strategy = CrtStrategy(self.symbol, p, self.cost_model)
 
-        hours = m5.index.floor("h")
+        hours = m5.index.floor(self.htf_rule)
         closes = m5["close"].to_numpy()
-        one_hour = pd.Timedelta(hours=1)
+        one_hour = pd.Timedelta(self.htf_rule)
 
         base_equity = self.initial_equity
         n_recorded = 0

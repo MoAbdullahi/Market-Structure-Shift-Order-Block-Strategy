@@ -105,6 +105,24 @@ def test_mss_scan_starts_first_m5_after_h1_close():
     assert trade.entry_time > h1_close
 
 
+def test_small_r_filter_rejects_setup():
+    m5 = synthetic_m5()
+    # the synthetic setup has R ~= 6; a cost model with round-trip cost 2.0
+    # and multiple 4 requires R >= 8 -> the setup must be filtered out
+    costly = CostModel(spread=1.0, slippage=0.5, tick_size=0.01)
+    assert costly.round_trip_cost == pytest.approx(2.0)
+    params = StrategyParams(min_r_cost_multiple=4.0)
+    result = Backtester("SYN", m5, params, costly, initial_equity=100_000).run()
+    assert result.counters.small_r_filtered == 1
+    assert result.counters.entries_filled == 0
+    assert len(result.trades) == 0
+    # with the filter off the same setup trades
+    result2 = Backtester(
+        "SYN", m5, StrategyParams(), costly, initial_equity=100_000
+    ).run()
+    assert result2.counters.entries_filled == 1
+
+
 def test_smoke_random_walk_invariants():
     import numpy as np
 

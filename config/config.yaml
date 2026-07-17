@@ -33,6 +33,7 @@ risk:
   trail_stop_to_1r_after: 2            # after Nth partial -> stop to 1R level
   intrabar_priority: stop_first        # stop_first (conservative) | target_first
   risk_pct: 1.0                        # % of current equity risked per trade
+  min_r_cost_multiple: 0.0             # reject setups with R < k * round-trip cost (0 = off)
 
 execution:
   initial_equity: 100000
@@ -57,9 +58,7 @@ optimization:
   objective: expectancy_r      # column used to rank / select parameter sets
   n_random: 50                 # samples for --mode random
   space:                       # any dotted config key can be searched
-    entry.pending_lifetime: [12, 24, 48]
-    entry.reference_candle_count: [2, 3, 5]
-    indicator.stop_buffer_atr: [0.05, 0.1, 0.2]
+    risk.min_r_cost_multiple: [0, 2, 4, 6, 8]
   walkforward:
     train_months: 12
     test_months: 3

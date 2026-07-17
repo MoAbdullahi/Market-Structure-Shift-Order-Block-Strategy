@@ -175,6 +175,29 @@ filters, or coarser entry timing.
 *(All numbers reproducible: `reports/` contains the full metrics JSON, trade
 lists, and equity curves for the run shown above.)*
 
+### Follow-up: root-cause investigation and small-R filter (walk-forward)
+
+`INVESTIGATION.md` documents a full diagnosis of the loss. Summary: the
+signal has a stable gross edge in every session, direction, and year; the
+loss is caused by execution costs overwhelming tiny M5-scale risk units
+(median cost 0.17 R/trade), compounded by 41 % of setups targeting a range
+already mostly consumed. The exit scheme and the H1 trigger are *not* the
+problem; M5 entry granularity partly is.
+
+A small-R filter (`risk.min_r_cost_multiple`: reject setups whose R distance
+is under k × round-trip cost) was added and validated by walk-forward
+(12-month train → 3-month unseen test, rolling, 12 windows × 6 symbols,
+k ∈ {0,2,4,6,8}; results in `reports/opt_walkforward_20260717_001931/`):
+
+- Pooled out-of-sample expectancy improves from **−0.24 R to +0.01 R**
+  (3,315 test trades) — the filter removes most of the cost damage but the
+  result is **breakeven, not a validated edge** (35/72 windows positive;
+  not statistically distinguishable from zero).
+- Only NAS100 (+0.07 R, 8/12 windows positive) and US30 (+0.01 R) are OOS
+  positive; FX pairs remain negative. Treating the index results as an edge
+  would be post-hoc instrument selection — it is a hypothesis for new data,
+  not a conclusion.
+
 ---
 
 ## Usage

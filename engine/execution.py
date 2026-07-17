@@ -20,6 +20,12 @@ class CostModel:
     commission_per_unit_side: float = 0.0  # account currency per unit, per side
     tick_size: float = 0.0
 
+    @property
+    def round_trip_cost(self) -> float:
+        """Total adverse cost of entry + exit for one unit, in price units
+        (commission is account currency per unit, which is price-equivalent)."""
+        return self.spread + 2.0 * self.slippage + 2.0 * self.commission_per_unit_side
+
     def fill_price(self, raw_price: float, side: str) -> float:
         """Adverse-adjusted execution price. side: 'buy' | 'sell'."""
         adjustment = self.spread / 2.0 + self.slippage

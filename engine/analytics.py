@@ -189,6 +189,7 @@ def _execution_metrics(trades, counters) -> dict:
                 "crt_triggers": counters.crt_triggers,
                 "canceled_pending_orders": counters.canceled_pending,
                 "expired_setups": counters.expired_setups,
+                "small_r_filtered": counters.small_r_filtered,
                 "missed_entries": counters.missed_entries,
                 "invalidated_mss": counters.invalidated_mss,
                 "session_filtered": counters.session_filtered,

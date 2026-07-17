@@ -52,6 +52,9 @@ class StrategyParams:
     trail_stop_to_1r_after: int = 2
     # sizing
     risk_pct: float = 1.0  # % of current equity risked per trade
+    # small-R filter: reject setups whose R distance is below
+    # min_r_cost_multiple * round-trip execution cost (0 = off)
+    min_r_cost_multiple: float = 0.0
     # session / filters
     session_enabled: bool = False
     session_windows: tuple = ()  # e.g. (("07:00","16:00"),) UTC
@@ -67,6 +70,7 @@ class Counters:
     session_filtered: int = 0
     invalidated_mss: int = 0
     expired_setups: int = 0  # MSS confirmed but no OB / invalid geometry / PD-filtered
+    small_r_filtered: int = 0  # setups rejected by the small-R cost filter
     canceled_pending: int = 0
     entries_filled: int = 0
 
@@ -168,6 +172,14 @@ class CrtStrategy:
         )
         if levels is None or not self._passes_pd_filter(entry_price):
             self.counters.expired_setups += 1
+            self._reset(time)
+            return
+
+        if (
+            self.p.min_r_cost_multiple > 0
+            and levels.r_dist < self.p.min_r_cost_multiple * self.costs.round_trip_cost
+        ):
+            self.counters.small_r_filtered += 1
             self._reset(time)
             return
 
