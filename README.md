@@ -225,6 +225,32 @@ overlap these test windows, so this is strong but not pristine evidence —
 the definitive confirmation is performance on genuinely new data
 (post-2026-05, or instruments outside this basket).
 
+### Follow-up 3: one-shot forward test on genuinely new data
+
+New M15 data (2026-05-12 → 2026-07-17, Dukascopy via `Data/fetch_oos_data.py`;
+overlap week verified identical to the research data) was used **once**, with
+a configuration frozen beforehand: per symbol, the small-R filter `k` was
+selected by training only on the final 12 months of the old data — the exact
+procedure the walk-forward validated. Results
+(`reports/forward_test_M15_20260717_013643/`):
+
+| Symbol | k | Trades | Win % | Expectancy |
+|---|---:|---:|---:|---:|
+| XAUUSD | 8 | 49 | 71.4 % | +0.314 R |
+| NAS100 | 4 | 42 | 59.5 % | +0.230 R |
+| USDJPY | 6 | 2 | 100 % | +0.310 R |
+| EURUSD | 4 | 8 | 87.5 % | +0.050 R |
+| GBPUSD | 6 | 10 | 80.0 % | +0.040 R |
+| US30 | 8 | 29 | 58.6 % | −0.039 R |
+
+**Pooled: +0.181 R over 140 trades (95 % CI +0.003 to +0.359), 67 % win
+rate, +25.4 R total.** Positive and consistent with the walk-forward — but
+140 trades over ~2 months is well below the sample needed for a confident
+verdict (the CI barely excludes zero), and US30, the best walk-forward
+instrument, was slightly negative this period — instrument-level results at
+this sample size are noise. Verdict: **survives so far**; keep extending the
+forward window before sizing up.
+
 ---
 
 ## Usage

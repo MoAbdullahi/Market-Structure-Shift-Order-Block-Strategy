@@ -1,0 +1,13 @@
+{
+  "cutoff": "2026-05-12 00:00:00+00:00",
+  "chosen_k": {
+    "EURUSD": 4,
+    "GBPUSD": 6,
+    "USDJPY": 6,
+    "XAUUSD": 8,
+    "NAS100": 4,
+    "US30": 8
+  },
+  "pooled_expectancy_r": 0.18113943388873288,
+  "n_trades": 140
+}
