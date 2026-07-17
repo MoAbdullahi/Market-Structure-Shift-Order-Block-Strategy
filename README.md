@@ -251,6 +251,31 @@ instrument, was slightly negative this period — instrument-level results at
 this sample size are noise. Verdict: **survives so far**; keep extending the
 forward window before sizing up.
 
+### Follow-up 4: independent data-source replication (histdata.com)
+
+All key results were re-run on an independent feed: histdata.com free M1
+bars resampled to M15 (`Data/fetch_alt_data.py` → `Data/ALT/M15/`).
+histdata covers 5 of the 6 instruments (no Dow product exists there, so
+US30 has no alternate source; the Kaggle NASDAQ-100 dataset turned out to
+be *daily bars of individual member stocks* — unusable for intraday
+testing). Data note: histdata's docs claim fixed EST timestamps, but
+alignment against Dukascopy proves they are US Eastern **with DST**; after
+correction the feeds match bar-for-bar (return correlation 0.86–0.94).
+
+Replication on the alternate feed (`reports/altsource_replication_*`,
+`reports/opt_walkforward_ALT_M15_*`):
+
+- **Full-period M15 baseline:** same sign and ordering on all 5 symbols
+  (e.g. EURUSD −0.471 R vs −0.491 R on Dukascopy; XAUUSD +0.044 vs +0.020).
+- **Walk-forward, same 5-symbol basket:** pooled OOS **+0.104 R
+  (1,684 trades, 40/60 windows positive)** vs **+0.111 R (1,768 trades,
+  42/60)** on Dukascopy; per-symbol signs identical (EURUSD negative on
+  both, NAS100 +0.157 vs +0.153).
+- **Forward window** (2026-05-12 → 06-26, frozen k): pooled +0.167 R over
+  81 trades vs +0.181 R on Dukascopy.
+
+The results are properties of the market, not artifacts of one data vendor.
+
 ---
 
 ## Usage

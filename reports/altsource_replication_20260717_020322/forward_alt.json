@@ -1,0 +1,41 @@
+{
+  "forward_rows": [
+    {
+      "symbol": "EURUSD",
+      "k": 4,
+      "trades": 7,
+      "expectancy_r": 0.008525127966333769,
+      "total_r": 0.05967589576433638
+    },
+    {
+      "symbol": "GBPUSD",
+      "k": 6,
+      "trades": 8,
+      "expectancy_r": -0.014636701277188718,
+      "total_r": -0.11709361021750975
+    },
+    {
+      "symbol": "USDJPY",
+      "k": 6,
+      "trades": 1,
+      "expectancy_r": 0.27044025157209667,
+      "total_r": 0.27044025157209667
+    },
+    {
+      "symbol": "XAUUSD",
+      "k": 8,
+      "trades": 37,
+      "expectancy_r": 0.4351670436959685,
+      "total_r": 16.101180616750835
+    },
+    {
+      "symbol": "NAS100",
+      "k": 4,
+      "trades": 28,
+      "expectancy_r": -0.10047271459412367,
+      "total_r": -2.813236008635463
+    }
+  ],
+  "pooled_expR": 0.16667860673128765,
+  "n": 81
+}
